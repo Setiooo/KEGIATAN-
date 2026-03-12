@@ -1,0 +1,424 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500&display=swap');
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes popIn{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes floatUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-50px);opacity:0}}
+  @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes xpFill{from{width:0}to{width:var(--xp-w)}}
+  @keyframes strikeIn{from{width:0}to{width:100%}}
+  @keyframes orb{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(20px,-15px) scale(1.05)}66%{transform:translate(-10px,10px) scale(.97)}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  @keyframes clockTick{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .app{
+    font-family:'DM Sans',sans-serif;
+    background:#0e1a14;
+    border-radius:20px;
+    overflow:hidden;
+    position:relative;
+    min-height:200px;
+  }
+
+  /* background orbs */
+  .orb{position:absolute;border-radius:50%;filter:blur(60px);animation:orb 12s ease-in-out infinite;pointer-events:none;z-index:0}
+  .orb1{width:220px;height:220px;background:#1a4a2e;top:-60px;right:-40px;animation-delay:0s}
+  .orb2{width:180px;height:180px;background:#2d3a1a;bottom:60px;left:-50px;animation-delay:-4s}
+  .orb3{width:140px;height:140px;background:#3a2010;bottom:200px;right:20px;animation-delay:-8s}
+
+  .inner{position:relative;z-index:1;padding:20px 18px 24px}
+
+  /* header */
+  .header{margin-bottom:18px;animation:fadeUp .5s ease-out}
+  .day-quote{font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:#a8c4a0;line-height:1.5;margin-bottom:10px;border-left:2px solid #4a8c5c;padding-left:12px}
+  .header-row{display:flex;align-items:center;gap:10px}
+  .clock-pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:6px}
+  .clock-time{font-size:14px;font-weight:500;color:#e8f0e4;letter-spacing:1px;font-family:'DM Sans',monospace}
+  .clock-sep{animation:clockTick 1s step-start infinite;color:#a8c4a0}
+  .date-pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:5px 12px;font-size:12px;color:#a8c4a0;flex:1}
+
+  /* level bar */
+  .level-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:16px;animation:fadeUp .5s .1s ease-out both}
+  .level-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .level-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f5a623,#e8621a);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+  .level-info{flex:1}
+  .level-name{font-family:'Fraunces',serif;font-size:14px;color:#f0e8d4;font-weight:600}
+  .level-sub{font-size:11px;color:#7a9e7e;margin-top:1px}
+  .level-xp{font-size:11px;color:#a8c4a0;text-align:right}
+  .xp-track{height:6px;border-radius:20px;background:rgba(255,255,255,.08);overflow:hidden}
+  .xp-fill{height:6px;border-radius:20px;background:linear-gradient(90deg,#f5a623,#63c87a);transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+
+  /* daily mood */
+  .mood-row{display:flex;gap:6px;margin-bottom:16px;animation:fadeUp .5s .15s ease-out both}
+  .mood-btn{flex:1;padding:8px 4px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);cursor:pointer;text-align:center;transition:all .2s;font-size:18px}
+  .mood-btn:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}
+  .mood-btn.active{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.15);transform:scale(1.05)}
+  .mood-label{display:block;font-size:9px;color:#6a8a6e;margin-top:2px}
+
+  /* daily quest */
+  .quest-card{border-radius:14px;padding:14px;margin-bottom:16px;animation:fadeUp .5s .2s ease-out both;position:relative;overflow:hidden}
+  .quest-bg{position:absolute;inset:0;opacity:.15;background-size:cover}
+  .quest-inner{position:relative}
+  .quest-tag{font-size:10px;font-weight:500;letter-spacing:.5px;opacity:.8;margin-bottom:6px;text-transform:uppercase}
+  .quest-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600;line-height:1.3;margin-bottom:4px}
+  .quest-desc{font-size:12px;opacity:.8;line-height:1.5}
+  .quest-done-btn{margin-top:10px;padding:7px 16px;border-radius:20px;border:none;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+  .quest-done-btn:hover{transform:scale(1.05)}
+  .quest-done-btn.done{opacity:.6;cursor:default}
+
+  /* categories */
+  .cat-label{font-size:11px;font-weight:500;color:#4a6e4e;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;animation:fadeUp .5s .25s ease-out both}
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .cat-card{border-radius:14px;padding:13px 12px;cursor:pointer;transition:all .2s;animation:fadeUp .5s ease-out both;position:relative;overflow:hidden}
+  .cat-card:hover{transform:translateY(-2px) scale(1.01)}
+  .cat-card.done-cat{opacity:.7}
+  .cat-emoji{font-size:22px;margin-bottom:6px;display:block}
+  .cat-name{font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.2}
+  .cat-done-count{font-size:10px;opacity:.7}
+  .cat-prog{margin-top:8px;height:3px;border-radius:10px;background:rgba(255,255,255,.15);overflow:hidden}
+  .cat-prog-fill{height:3px;border-radius:10px;background:rgba(255,255,255,.6);transition:width .4s}
+
+  /* items modal / expanded */
+  .items-area{border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:14px;margin-bottom:14px;animation:fadeUp .3s ease-out}
+  .items-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .items-back{background:none;border:none;color:#a8c4a0;cursor:pointer;font-size:20px;padding:0;line-height:1}
+  .items-title{font-family:'Fraunces',serif;font-size:15px;color:#f0e8d4;font-weight:600;flex:1}
+  .item-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .15s}
+  .item-row:last-child{border-bottom:none}
+  .item-row:hover{padding-left:4px}
+  .item-cb{width:18px;height:18px;border-radius:5px;border:1.5px solid rgba(255,255,255,.25);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .item-cb.chk{animation:popIn .25s ease-out}
+  .item-cb.chk::after{content:'';display:block;width:5px;height:9px;border:2px solid #0e1a14;border-top:none;border-left:none;transform:rotate(40deg) translateY(-1px)}
+  .item-text{font-size:13px;color:#c8dcc4;line-height:1.5;flex:1;position:relative}
+  .item-row.done .item-text{color:#4a6e4e}
+  .item-row.done .item-text::after{content:'';position:absolute;left:0;top:50%;height:1px;background:#4a6e4e;animation:strikeIn .25s ease-out forwards}
+  .xp-tag{font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(245,166,35,.15);color:#f5a623;flex-shrink:0;font-weight:500;margin-top:2px}
+
+  /* bottom stats */
+  .bottom-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;animation:fadeUp .5s .35s ease-out both}
+  .bstat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 8px;text-align:center}
+  .bstat-val{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:#e8f0e4}
+  .bstat-lbl{font-size:10px;color:#4a6e4e;margin-top:2px}
+
+  .float-msg{position:absolute;font-size:13px;font-weight:500;color:#f5a623;pointer-events:none;animation:floatUp .8s ease-out forwards;z-index:50;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+</style>
+
+<div class="app">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="inner">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="day-quote" id="day-quote"></div>
+      <div class="header-row">
+        <div class="clock-pill">
+          <span class="clock-time" id="clock"></span>
+        </div>
+        <div class="date-pill" id="date-pill"></div>
+      </div>
+    </div>
+
+    <!-- LEVEL -->
+    <div class="level-card">
+      <div class="level-row">
+        <div class="level-badge" id="level-badge">🌱</div>
+        <div class="level-info">
+          <div class="level-name" id="level-name">Penjelajah Muda</div>
+          <div class="level-sub" id="level-sub">Level 1 — terus berkembang!</div>
+        </div>
+        <div class="level-xp" id="level-xp">0 / 100 XP</div>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- MOOD -->
+    <div class="mood-row" id="mood-row">
+      <div class="mood-btn" onclick="setMood(0)" data-m="0"><span>😴</span><span class="mood-label">Lemas</span></div>
+      <div class="mood-btn" onclick="setMood(1)" data-m="1"><span>😐</span><span class="mood-label">Biasa</span></div>
+      <div class="mood-btn" onclick="setMood(2)" data-m="2"><span>🙂</span><span class="mood-label">Oke</span></div>
+      <div class="mood-btn" onclick="setMood(3)" data-m="3"><span>😄</span><span class="mood-label">Semangat</span></div>
+      <div class="mood-btn" onclick="setMood(4)" data-m="4"><span>🔥</span><span class="mood-label">On Fire!</span></div>
+    </div>
+
+    <!-- DAILY QUEST -->
+    <div class="quest-card" id="quest-card">
+      <div class="quest-inner">
+        <div class="quest-tag" id="quest-tag">quest harian</div>
+        <div class="quest-title" id="quest-title"></div>
+        <div class="quest-desc" id="quest-desc"></div>
+        <button class="quest-done-btn" id="quest-btn" onclick="completeQuest()"></button>
+      </div>
+    </div>
+
+    <!-- CATEGORIES or ITEMS -->
+    <div class="cat-label">aktivitas pribadiku</div>
+    <div id="main-area"></div>
+
+    <!-- BOTTOM STATS -->
+    <div class="bottom-stats">
+      <div class="bstat"><div class="bstat-val" id="bs-today">0</div><div class="bstat-lbl">hari ini</div></div>
+      <div class="bstat"><div class="bstat-val" id="bs-streak">0🔥</div><div class="bstat-lbl">hari beruntun</div></div>
+      <div class="bstat"><div class="bstat-val" id="bs-xp">0</div><div class="bstat-lbl">total XP</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const QUOTES=[
+  "Waktu sendiri adalah investasi terbaik yang bisa kamu berikan untuk dirimu.",
+  "Membaca satu bab sehari lebih baik dari tidak membaca sama sekali.",
+  "Jalan-jalan bukan membuang waktu — itu mengisi ulang energi.",
+  "Pikiran yang tenang menghasilkan ide yang jernih.",
+  "Berkembang bukan lomba. Tempomu sendiri sudah cukup.",
+  "Hari ini bukan tentang menjadi sempurna — tapi tentang satu langkah lebih baik.",
+  "Yang kamu lakukan untuk dirimu sendiri akan bertahan lebih lama dari apapun.",
+  "Kreativitas bukan bakat — itu kebiasaan yang diasah setiap hari.",
+  "Rasa ingin tahu adalah kompas terbaik dalam hidup.",
+  "Istirahat yang disengaja berbeda dari malas. Yang satu mengisi, yang lain menguras.",
+  "Kamu tidak perlu produktif setiap menit. Hidup juga butuh ruang putih.",
+  "Satu halaman hari ini, satu bab minggu ini, satu buku bulan ini.",
+  "Jurnal adalah cermin jiwa yang tidak pernah bohong.",
+  "Berjalan kaki sambil berpikir menghasilkan ide-ide terbaik.",
+  "Belajar sesuatu yang baru, meski sedikit, adalah hadiah untuk dirimu di masa depan.",
+];
+
+const QUESTS=[
+  {title:"Jalan 20 menit tanpa HP",desc:"Tinggalkan HP di rumah. Rasakan sekitar. Amati hal kecil yang biasanya terlewat.",color:"#1e3d2a",text:"#a8f0c0",btn:"#2a5c3a",btntxt:"#c8ffdc",tag:"🚶 gerak"},
+  {title:"Baca 15 halaman hari ini",desc:"Pilih buku apa saja — fiksi, nonfiksi, komik. Yang penting dibaca, bukan digenggam.",color:"#2a1e3d",text:"#c0a8f0",btn:"#3a2a5c",btntxt:"#dcc8ff",tag:"📚 membaca"},
+  {title:"Tulis 3 hal yang kamu syukuri",desc:"Bukan list biasa — tulis kenapa itu berharga. Detail mengubah syukur jadi perasaan nyata.",color:"#3d2a1e",text:"#f0c8a8",btn:"#5c3a2a",btntxt:"#ffdcc8",tag:"✍️ refleksi"},
+  {title:"Pelajari 1 fakta menarik hari ini",desc:"Satu fakta yang bikin kamu bilang 'oh!' — dari buku, podcast, artikel, atau obrolan.",color:"#1e2a3d",text:"#a8c8f0",btn:"#2a3a5c",btntxt:"#c8dcff",tag:"🧠 belajar"},
+  {title:"Gambar atau coret-coret bebas",desc:"Bukan harus bagus. Ekspresikan apa yang ada di kepala tanpa filter dan penilaian.",color:"#3d1e2a",text:"#f0a8c0",btn:"#5c2a3a",btntxt:"#ffc8dc",tag:"🎨 kreasi"},
+  {title:"Duduk diam 10 menit, tanpa layar",desc:"Matikan semua. Duduk. Bernafas. Biarkan pikiran mengalir tanpa tujuan.",color:"#1e3d3a",text:"#a8f0e8",btn:"#2a5c58",btntxt:"#c8fff8",tag:"🧘 tenang"},
+  {title:"Hubungi seseorang yang kamu rindukan",desc:"Teman lama, saudara, siapa saja. Satu pesan kecil bisa berarti besar.",color:"#3d351e",text:"#f0e0a8",btn:"#5c4e2a",btntxt:"#fff4c8",tag:"💛 koneksi"},
+];
+
+const CATS=[
+  {id:'baca',emoji:'📚',name:'Membaca',color:'#1c2d3a',accent:'#4a9edd',items:[
+    {t:'Baca buku 15 menit',xp:15},
+    {t:'Catat 1 kutipan favorit dari bacaan',xp:10},
+    {t:'Baca artikel atau esai yang informatif',xp:10},
+    {t:'Review / rating buku yang sudah dibaca',xp:8},
+    {t:'Buat ringkasan singkat bab yang dibaca',xp:12},
+  ]},
+  {id:'jalan',emoji:'🚶',name:'Eksplorasi',color:'#1a3020',accent:'#5acd7a',items:[
+    {t:'Jalan kaki minimal 15 menit',xp:12},
+    {t:'Kunjungi tempat baru di sekitar',xp:20},
+    {t:'Foto satu hal yang menarik perhatian',xp:8},
+    {t:'Amati alam/lingkungan tanpa distraksi',xp:10},
+    {t:'Coba rute / jalan berbeda dari biasanya',xp:15},
+  ]},
+  {id:'jurnal',emoji:'✍️',name:'Refleksi',color:'#2d1a10',accent:'#e8923a',items:[
+    {t:'Tulis jurnal bebas 5 menit',xp:12},
+    {t:'Catat 3 hal yang disyukuri hari ini',xp:10},
+    {t:'Tulis tujuan minggu ini',xp:10},
+    {t:'Evaluasi kemarin: apa yang berjalan baik?',xp:10},
+    {t:'Tulis satu kekhawatiran lalu lepaskan',xp:15},
+  ]},
+  {id:'kreasi',emoji:'🎨',name:'Kreativitas',color:'#2d1020',accent:'#e85aaa',items:[
+    {t:'Gambar / coret-coret bebas 10 menit',xp:12},
+    {t:'Dengarkan album baru dari awal sampai akhir',xp:10},
+    {t:'Buat sesuatu dengan tangan (origami, dll.)',xp:18},
+    {t:'Coba resep makanan/minuman baru',xp:15},
+    {t:'Tulis puisi atau cerpen pendek',xp:20},
+  ]},
+  {id:'belajar',emoji:'🧠',name:'Belajar',color:'#0e1f30',accent:'#3a8af0',items:[
+    {t:'Pelajari 1 kata / konsep baru',xp:8},
+    {t:'Tonton 1 video edukatif',xp:10},
+    {t:'Latihan skill: bahasa, kode, dll.',xp:15},
+    {t:'Coba selesaikan puzzle / teka-teki',xp:12},
+    {t:'Ikuti kursus online 1 modul',xp:18},
+  ]},
+  {id:'tenang',emoji:'🌿',name:'Ketenangan',color:'#0e2a28',accent:'#3accc0',items:[
+    {t:'Duduk diam 10 menit tanpa layar',xp:12},
+    {t:'Nafas dalam 5 menit (4-7-8 breathing)',xp:10},
+    {t:'Matikan semua notif 1 jam',xp:15},
+    {t:'Tidur siang pendek ≤ 20 menit',xp:8},
+    {t:'Dengarkan suara alam / white noise',xp:8},
+  ]},
+];
+
+const LEVELS=[
+  {min:0,max:99,name:'Penjelajah Muda',icon:'🌱',sub:'Mulai menemukan dirimu'},
+  {min:100,max:249,name:'Pemikir Aktif',icon:'📖',sub:'Pikiran mulai tumbuh'},
+  {min:250,max:499,name:'Penjelajah Sejati',icon:'🧭',sub:'Perjalanan yang nyata'},
+  {min:500,max:799,name:'Kreator Kehidupan',icon:'🎨',sub:'Hidup penuh warna'},
+  {min:800,max:1199,name:'Bijak Alam',icon:'🌲',sub:'Kedalaman membentuk karakter'},
+  {min:1200,max:99999,name:'Jiwa Merdeka',icon:'🦅',sub:'Melampaui batas diri'},
+];
+
+const today=new Date();
+const MONTHS_ID=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DAYS_ID=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const dayOfYear=Math.floor((today-(new Date(today.getFullYear(),0,0)))/(1000*60*60*24));
+
+function dayKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const todayKey=dayKey(today);
+
+const st=JSON.parse(localStorage.getItem('growth_v1')||'{}');
+if(!st.checks)st.checks={};
+if(!st.xp)st.xp=0;
+if(!st.mood)st.mood={};
+if(!st.quest)st.quest={};
+if(!st.streak)st.streak=0;
+if(!st.streakDate)st.streakDate='';
+
+function save(){localStorage.setItem('growth_v1',JSON.stringify(st));}
+
+let openCat=null;
+
+// quote
+document.getElementById('day-quote').textContent=QUOTES[dayOfYear%QUOTES.length];
+
+// quest
+const quest=QUESTS[dayOfYear%QUESTS.length];
+const qc=document.getElementById('quest-card');
+qc.style.background=quest.color;
+qc.style.color=quest.text;
+document.getElementById('quest-tag').textContent=quest.tag;
+document.getElementById('quest-title').textContent=quest.title;
+document.getElementById('quest-desc').textContent=quest.desc;
+const qBtn=document.getElementById('quest-btn');
+const questDone=st.quest[todayKey];
+qBtn.style.background=quest.btn;
+qBtn.style.color=quest.btntxt;
+if(questDone){qBtn.textContent='Selesai! +30 XP';qBtn.classList.add('done');}
+else{qBtn.textContent='Tandai selesai → +30 XP';}
+
+function completeQuest(){
+  if(st.quest[todayKey])return;
+  st.quest[todayKey]=true;
+  addXP(30);
+  qBtn.textContent='Selesai! +30 XP';
+  qBtn.classList.add('done');
+  spawnFloat(qBtn,'+ 30 XP 🎯');
+  save();
+}
+
+// clock
+function tickClock(){
+  const n=new Date();
+  const h=String(n.getHours()).padStart(2,'0');
+  const m=String(n.getMinutes()).padStart(2,'0');
+  const s=String(n.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').innerHTML=`${h}<span class="clock-sep">:</span>${m}<span class="clock-sep">:</span>${s}`;
+  document.getElementById('date-pill').textContent=`${DAYS_ID[n.getDay()]}, ${n.getDate()} ${MONTHS_ID[n.getMonth()]} ${n.getFullYear()}`;
+}
+tickClock();setInterval(tickClock,1000);
+
+// mood
+function setMood(i){
+  st.mood[todayKey]=i;
+  document.querySelectorAll('.mood-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  save();
+}
+if(st.mood[todayKey]!==undefined)document.querySelectorAll('.mood-btn')[st.mood[todayKey]]?.classList.add('active');
+
+// xp & level
+function getTotalXP(){return st.xp||0;}
+function getLevel(xp){return LEVELS.find((l,i)=>xp>=l.min&&(xp<=l.max||i===LEVELS.length-1))||LEVELS[0];}
+function updateLevel(){
+  const xp=getTotalXP();
+  const lv=getLevel(xp);
+  document.getElementById('level-badge').textContent=lv.icon;
+  document.getElementById('level-name').textContent=lv.name;
+  document.getElementById('level-sub').textContent=`Level ${LEVELS.indexOf(lv)+1} — ${lv.sub}`;
+  document.getElementById('level-xp').textContent=`${xp} XP`;
+  const pct=Math.min(Math.round((xp-lv.min)/(lv.max-lv.min)*100),100);
+  document.getElementById('xp-fill').style.width=pct+'%';
+  document.getElementById('bs-xp').textContent=xp;
+}
+function addXP(n){st.xp=(st.xp||0)+n;save();updateLevel();}
+
+// streak
+function updateStreak(){
+  const yest=new Date(today);yest.setDate(today.getDate()-1);
+  const yKey=dayKey(yest);
+  const todayDone=(st.checks[todayKey]||[]).some(Boolean);
+  const yesterDone=(st.checks[yKey]||[]).some(Boolean);
+  if(todayDone){
+    if(st.streakDate===yKey||st.streakDate===todayKey){
+      if(st.streakDate!==todayKey){st.streak=(st.streak||0)+1;st.streakDate=todayKey;}
+    } else {st.streak=1;st.streakDate=todayKey;}
+  }
+  document.getElementById('bs-streak').textContent=(st.streak||0)+'🔥';
+  save();
+}
+
+// today count
+function updateTodayCount(){
+  const all=(st.checks[todayKey]||[]).filter(Boolean).length;
+  document.getElementById('bs-today').textContent=all;
+}
+
+// render main area
+function renderMain(){
+  const area=document.getElementById('main-area');
+  if(openCat){
+    const cat=CATS.find(c=>c.id===openCat);
+    const checks=st.checks[todayKey]||(st.checks[todayKey]=Array(CATS.reduce((s,c)=>s+c.items.length,0)).fill(false));
+    let offset=0;CATS.forEach(c=>{if(c.id===openCat)return;offset+=c.items.length;});
+    const done=cat.items.filter((_,i)=>checks[offset+i]).length;
+    let html=`<div class="items-area" style="border-color:${cat.accent}33">
+      <div class="items-head">
+        <button class="items-back" onclick="openCat=null;renderMain()">←</button>
+        <span class="items-title">${cat.emoji} ${cat.name}</span>
+        <span style="font-size:11px;color:#4a6e4e">${done}/${cat.items.length}</span>
+      </div>`;
+    cat.items.forEach((item,i)=>{
+      const idx=offset+i;
+      const chk=checks[idx];
+      html+=`<div class="item-row${chk?' done':''}" onclick="toggleItem('${cat.id}',${idx},${item.xp},event)">
+        <div class="item-cb${chk?' chk':''}" style="${chk?`background:${cat.accent}`:''}"></div>
+        <span class="item-text">${item.t}</span>
+        <span class="xp-tag">+${item.xp}</span>
+      </div>`;
+    });
+    html+=`</div>`;
+    area.innerHTML=html;
+  } else {
+    const checks=st.checks[todayKey]||Array(CATS.reduce((s,c)=>s+c.items.length,0)).fill(false);
+    let offset=0;
+    let html=`<div class="cat-grid">`;
+    CATS.forEach((cat,ci)=>{
+      const done=cat.items.filter((_,i)=>checks[offset+i]).length;
+      const pct=Math.round(done/cat.items.length*100);
+      const delay=ci*0.05;
+      html+=`<div class="cat-card${done===cat.items.length?' done-cat':''}" style="background:${cat.color};animation-delay:${delay}s" onclick="openCat='${cat.id}';renderMain()">
+        <span class="cat-emoji">${cat.emoji}</span>
+        <div class="cat-name" style="color:${cat.accent}">${cat.name}</div>
+        <div class="cat-done-count" style="color:${cat.accent}99">${done}/${cat.items.length} selesai</div>
+        <div class="cat-prog"><div class="cat-prog-fill" style="width:${pct}%;background:${cat.accent}"></div></div>
+      </div>`;
+      offset+=cat.items.length;
+    });
+    html+=`</div>`;
+    area.innerHTML=html;
+  }
+}
+
+function toggleItem(catId,idx,xpVal,ev){
+  if(!st.checks[todayKey])st.checks[todayKey]=Array(CATS.reduce((s,c)=>s+c.items.length,0)).fill(false);
+  const was=st.checks[todayKey][idx];
+  st.checks[todayKey][idx]=!was;
+  if(!was){addXP(xpVal);spawnFloat(ev.currentTarget,`+${xpVal} XP`);}
+  updateTodayCount();updateStreak();renderMain();save();
+}
+
+function spawnFloat(el,msg){
+  const rect=el.getBoundingClientRect();
+  const appRect=document.querySelector('.app').getBoundingClientRect();
+  const div=document.createElement('div');div.className='float-msg';div.textContent=msg;
+  div.style.left=(rect.left-appRect.left+rect.width/2)+'px';
+  div.style.top=(rect.top-appRect.top-10)+'px';
+  document.querySelector('.app').style.position='relative';
+  document.querySelector('.app').appendChild(div);
+  setTimeout(()=>div.remove(),900);
+}
+
+updateLevel();updateTodayCount();updateStreak();renderMain();
+</script>
